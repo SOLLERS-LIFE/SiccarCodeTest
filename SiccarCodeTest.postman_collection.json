@@ -1,0 +1,200 @@
+{
+	"info": {
+		"_postman_id": "567a1943-c8be-4d8b-9096-51515621a2e9",
+		"name": "SiccarCodeTest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "RegisterSingleVehicle",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"The response has all properties\", () => {\r",
+							"    //parse the response json and test three properties\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.type).to.eql('HGV');\r",
+							"    pm.expect(responseJson.registration).to.eql('3f12 16dt');\r",
+							"    pm.expect(responseJson.maxTrailerLoad).to.eql(100);\r",
+							"    pm.expect(responseJson.totalTax).to.be.not.null;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"The total tax is correct\", () => {\r",
+							"    //parse the response json and test three properties\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.totalTax).to.eql(140)\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"HGV\",\r\n    \"registration\": \"3f12 16dt\",\r\n    \"maxTrailerLoad\": 100\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5051/Tax/register-vehicle",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5051",
+					"path": [
+						"Tax",
+						"register-vehicle"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RegisterVehicles",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var reqJson = JSON.parse(request.data);\r",
+							"const responseJson = pm.response.json();\r",
+							"\r",
+							"const expectedTaxResults = {\r",
+							"    \"ab12 12cd\": 125,\r",
+							"    \"ut43 34fa\": 100,\r",
+							"    \"db43 23ts\": 125,\r",
+							"    \"df12 12st\": 240,\r",
+							"    \"3f12 16dt\": 140\r",
+							"}\r",
+							"\r",
+							"pm.test(\"Test all vehicles\", () => {\r",
+							"    for (registration in expectedTaxResults) {\r",
+							"        var vehicleInBody = reqJson.find(vehicle => vehicle.registration === registration)\r",
+							"        var vehicleWithTax = responseJson.find(vehicle => vehicle.registration === registration)\r",
+							"\r",
+							"        pm.expect(vehicleWithTax.totalTax).to.eql(expectedTaxResults[registration])\r",
+							"\r",
+							"        pm.expect(vehicleWithTax.type).to.eql(vehicleInBody.type)\r",
+							"\r",
+							"        pm.expect(vehicleWithTax.maxTrailerLoad).to.eql(vehicleInBody.maxTrailerLoad)\r",
+							"        \r",
+							"        pm.expect(vehicleWithTax.numberOfSeats).to.eql(vehicleInBody.numberOfSeats)\r",
+							"\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\r\n        \"registration\": \"ab12 12cd\",\r\n        \"type\": \"Car\",\r\n        \"numberOfSeats\": 2\r\n    },\r\n        {\r\n        \"registration\": \"ut43 34fa\",\r\n        \"type\": \"Car\",\r\n        \"numberOfSeats\": 5\r\n    },\r\n    {\r\n        \"registration\": \"db43 23ts\",\r\n        \"type\": \"Car\",\r\n        \"numberOfSeats\": 6\r\n    },\r\n    {\r\n        \"type\": \"HGV\",\r\n        \"registration\": \"df12 12st\",\r\n        \"maxTrailerLoad\": 400\r\n    },\r\n    {\r\n        \"type\": \"HGV\",\r\n        \"registration\": \"3f12 16dt\",\r\n        \"maxTrailerLoad\": 100\r\n    }\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5051/Tax/register-vehicles",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5051",
+					"path": [
+						"Tax",
+						"register-vehicles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetAllRegisteredVehicles",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"\r",
+							"\r",
+							"pm.test(\"Test all vehicles\", () => {\r",
+							"    for (vehicle of responseJson) {\r",
+							"        pm.expect(vehicle.totalTax).to.be.a(\"number\")\r",
+							"\r",
+							"        pm.expect(vehicle.type).to.be.oneOf(['HGV', 'Car']);\r",
+							"\r",
+							"        pm.expect(vehicle.registration).to.be.a(\"string\");\r",
+							"\r",
+							"        if (vehicle.type === \"Car\") {\r",
+							"            pm.expect(vehicle).to.have.property(\"numberOfSeats\")\r",
+							"        }\r",
+							"        \r",
+							"        if (vehicle.type === \"HGV\") {\r",
+							"            pm.expect(vehicle).to.have.property(\"numberOfSeat\")\r",
+							"        }\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5051/Tax/",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5051",
+					"path": [
+						"Tax",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"pm.test(\"Status code is Success\", () => {",
+					"  pm.expect(pm.response.code).to.eql(200);",
+					"});"
+				]
+			}
+		}
+	]
+}
