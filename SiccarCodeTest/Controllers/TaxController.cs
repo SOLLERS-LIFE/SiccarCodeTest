@@ -7,6 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+// VFD ADDED
+using SiccarCodeTest.Domain;
+// VFD ADDED END
 
 namespace SiccarCodeTest.Controllers
 {
@@ -23,6 +26,24 @@ namespace SiccarCodeTest.Controllers
             _repository = repository;
         }
 
+        // VFD ADDED
+        /// <summary>Add one vehicle to in memory repository</summary>
+        /// <param name="attrName">vehicle to add</param>
+        /// <returns>true if all is OK</returns>
+        [NonAction]
+        private async Task<bool> addVehicleAsync (Vehicle vehicle)
+        {
+            _ = vehicle ?? throw new ArgumentNullException(nameof(vehicle), "Vehicle cannot be null.");
+
+            // assign total tax
+            TaxCalculator.CalulateVehicleTax(vehicle);
+
+            // add to repository
+            await _repository.InsertOrUpdate(vehicle.Registration, vehicle);
+
+            return await Task.FromResult(true);
+        }
+        // VFD ADDED END
         /// <summary>
         /// Registers a vehicle to the repository
         /// </summary>
@@ -31,8 +52,11 @@ namespace SiccarCodeTest.Controllers
         [HttpPost("register-vehicle")]
         public async Task<Vehicle> RegisterVehicleAsync(Vehicle vehicle)
         {
-            //TODO
-            throw new NotImplementedException();
+            // VFD ADDED
+            await addVehicleAsync(vehicle);
+
+            return await Task.FromResult(vehicle);
+            // VFD ADDED END
         }
 
         /// <summary>
@@ -43,8 +67,15 @@ namespace SiccarCodeTest.Controllers
         [HttpPost("register-vehicles")]
         public async Task<List<Vehicle>> RegisterVehiclesAsync(List<Vehicle> vehicles)
         {
-            //TODO
-            throw new NotImplementedException();
+            // VFD ADDED
+            _ = vehicles ?? throw new ArgumentNullException(nameof(vehicles), "Vehicle cannot be null.");
+
+            foreach (var vcl in vehicles)
+            {
+                await addVehicleAsync(vcl);
+            }
+            return await Task.FromResult(vehicles);
+            // VFD ADDED END
         }
 
         /// <summary>
@@ -53,8 +84,9 @@ namespace SiccarCodeTest.Controllers
         [HttpGet]
         public async Task<List<Vehicle>> GetVehiclesAsync()
         {
-            //TODO
-            throw new NotImplementedException();
+            // VFD ADDED
+            return await _repository.GetAll();
+            // VFD ADDED END
         }
     }
 }

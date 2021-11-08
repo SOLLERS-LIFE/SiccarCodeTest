@@ -1,0 +1,47 @@
+A. Last Postman test contains mistake:
+
+What is:
+
+const responseJson = pm.response.json();
+
+
+pm.test("Test all vehicles", () => {
+    for (vehicle of responseJson) {
+        pm.expect(vehicle.totalTax).to.be.a("number")
+
+        pm.expect(vehicle.type).to.be.oneOf(['HGV', 'Car']);
+
+        pm.expect(vehicle.registration).to.be.a("string");
+
+        if (vehicle.type === "Car") {
+            pm.expect(vehicle).to.have.property("numberOfSeats")
+        }
+        
+        if (vehicle.type === "HGV") {
+            pm.expect(vehicle).to.have.property("numberOfSeat")
+        }
+    }
+});
+
+What should be:
+
+const responseJson = pm.response.json();
+
+
+pm.test("Test all vehicles", () => {
+    for (vehicle of responseJson) {
+        pm.expect(vehicle.totalTax).to.be.a("number")
+
+        pm.expect(vehicle.type).to.be.oneOf(['HGV', 'Car']);
+
+        pm.expect(vehicle.registration).to.be.a("string");
+
+        if (vehicle.type === "Car") {
+            pm.expect(vehicle).to.have.property("numberOfSeats")
+        }
+        
+        if (vehicle.type === "HGV") {
+            pm.expect(vehicle).to.have.property("maxTrailerLoad")
+        }
+    }
+});

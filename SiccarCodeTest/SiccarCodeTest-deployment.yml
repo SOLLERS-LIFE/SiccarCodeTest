@@ -1,0 +1,38 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scrt-debug
+  labels:
+    name: scrt-debug
+    app: scrt-debug
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scrt-debug
+  template:
+    metadata:
+      labels:
+        app: scrt-debug
+    spec:
+      containers:
+      - name: scrt-debug
+        image: bosun-01.sollers.lab:5000/mtf-runner:v4.00
+        imagePullPolicy: IfNotPresent
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "cp -R /stores/exchange/SiccarCodeTest/* /var/run/MTFPublished; cd /var/run/MTFPublished; ./SiccarCodeTest;" ]
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: 500m
+          limits:
+            memory: 4Gi
+            cpu: 2000m
+        volumeMounts:
+        - name: exchange
+          mountPath: /stores/exchange
+          readOnly: true
+      volumes:
+      - name: exchange
+        persistentVolumeClaim:
+          claimName: exchange-claim

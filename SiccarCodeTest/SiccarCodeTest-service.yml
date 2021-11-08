@@ -1,0 +1,17 @@
+﻿apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: scrt-debug
+  name: scrt-debug
+spec:
+  type: NodePort
+  externalTrafficPolicy: Local
+  ports:
+    - name: https
+      protocol: TCP
+      port: 5051
+      targetPort: 5051
+      nodePort: 31900
+  selector:
+    app: scrt-debug
